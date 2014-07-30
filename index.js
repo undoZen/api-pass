@@ -1,4 +1,4 @@
-'strict mode';
+'use strict';
 var http = require('http');
 var proxy = require('simple-http-proxy');
 var extend = require('extend');
