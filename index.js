@@ -3,6 +3,10 @@ var http = require('http');
 var proxy = require('simple-http-proxy');
 var extend = require('extend');
 
+// set maxSockets to Infinity since simple-http-proxy don't provide a way to set agent
+http.globalAgent.maxSockets = Infinity;
+require('https').globalAgent.maxSockets = Infinity;
+
 exports = module.exports = function (endpoint, dopts) {
   var opts = extend({
     timeout: 30*1000,
