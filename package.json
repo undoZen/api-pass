@@ -1,6 +1,6 @@
 {
   "name": "api-pass",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "do reverse proxy if access_token passed",
   "main": "index.js",
   "scripts": {
