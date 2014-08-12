@@ -59,10 +59,42 @@ describe('apiPass middleware', function () {
         done();
       });
   });
+  it('should proxy to resource server with req.auth === true', function (done) {
+    var app = express();
+    app.get('/api/hello', function (req, res, next) {
+      req.authPass = true;
+      next();
+    });
+    app.use('/api', apiPass('http://localhost:4123/test'));
+    supertest(app).get('/api/hello')
+      .expect(200)
+      .end(function (err, r) {
+        assert(!err);
+        assert.equal('hello', r.text);
+        done();
+      });
+  });
   it('should return 403 if req.apiPass === false', function (done) {
     var app = express();
     app.get('/api/hello', function (req, res, next) {
       req.apiPass = false;
+      next();
+    });
+    app.use('/api', apiPass('http://localhost:4123/test'));
+    supertest(app).get('/api/hello')
+      .expect(403)
+      .end(function (err, r) {
+        assert(!err);
+        assert(r.error);
+        assert.equal(403, r.error.status);
+        assert.equal('Forbidden', r.body.error_description);
+        done();
+      });
+  });
+  it('should return 403 if req.authPass === false', function (done) {
+    var app = express();
+    app.get('/api/hello', function (req, res, next) {
+      req.authPass = false;
       next();
     });
     app.use('/api', apiPass('http://localhost:4123/test'));

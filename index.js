@@ -22,6 +22,7 @@ exports = module.exports = function (endpoint, dopts) {
       }
     }}, dopts || {});
   return function (req, res, next) {
+    req.apiPass = req.apiPass === true || req.apiPass === false ? req.apiPass : req.authPass;
     if (req.apiPass === true) {
       proxy(endpoint, opts)(req, res, next);
     } else if (req.apiPass === false) {
