@@ -2,6 +2,7 @@
 var http = require('http');
 var proxy = require('simple-http-proxy');
 var extend = require('extend');
+var concat = require('concat-stream');
 
 // set maxSockets to Infinity since simple-http-proxy don't provide a way to set agent
 http.globalAgent.maxSockets = Infinity;
@@ -14,10 +15,22 @@ exports = module.exports = function (endpoint, dopts) {
       if (response.statusCode >= 400) {
         res.statusCode = response.statusCode;
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({
+        var err = {
           error: 'invalid_request',
           error_description: http.STATUS_CODES[response.statusCode] || 'Unknown resource server error.'
-        }));
+        };
+        if ((response.headers['content-type']||'').split(';')[0].trim() == 'application/json') {
+          response.pipe(concat(function (data) {
+            var result = {};
+            try {
+              result = JSON.parse(data.toString('utf-8'));
+            } catch (e) {}
+            extend(err, result);
+            res.end(JSON.stringify(err));
+          }));
+        } else {
+          res.end(JSON.stringify(err));
+        }
         return true;
       }
     }}, dopts || {});

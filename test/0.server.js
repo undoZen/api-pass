@@ -17,6 +17,11 @@ describe('apiPass middleware', function () {
       res.statusCode = 404
       res.end('<p>Hello, World!</p>');
     });
+    app.get('/test/json', function (req, res, next) {
+      res.statusCode = 403
+      res.set('Content-Type', 'application/json; charset-utf-8');
+      res.send({error: 'test-error'});
+    });
     server.listen(4123);
   });
   after(function () {
@@ -123,6 +128,25 @@ describe('apiPass middleware', function () {
         assert(r.error);
         assert.equal(404, r.error.status);
         assert.equal('Not Found', r.body.error_description);
+        done();
+      });
+  });
+  it('should merge error json response', function (done) {
+    var app = express();
+    app.get('/api/json', function (req, res, next) {
+      req.apiPass = true;
+      next();
+    });
+    app.use('/api', apiPass('http://localhost:4123/test'));
+    supertest(app).get('/api/json')
+      .expect(403)
+      .end(function (err, r) {
+        if (err) console.error(err.stack);
+        assert(!err);
+        assert(r.error);
+        assert.equal(403, r.error.status);
+        assert.equal('test-error', r.body.error);
+        assert.equal('Forbidden', r.body.error_description);
         done();
       });
   });
