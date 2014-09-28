@@ -9,6 +9,7 @@ http.globalAgent.maxSockets = Infinity;
 require('https').globalAgent.maxSockets = Infinity;
 
 exports = module.exports = function (endpoint, dopts) {
+  dopts = dopts || {};
   var opts = extend({
     timeout: 30*1000,
     onresponse: function (response, res) {
@@ -32,8 +33,11 @@ exports = module.exports = function (endpoint, dopts) {
           res.end(JSON.stringify(err));
         }
         return true;
+      } else if (dopts.utf8 !== false && (response.headers['content-type']||'').match(/^application\/json$/i)) {
+        response.headers['content-type'] += '; charset=utf-8';
       }
-    }}, dopts || {});
+    }
+  }, dopts);
   return function (req, res, next) {
     req.apiPass = req.apiPass === true || req.apiPass === false ? req.apiPass : req.authPass;
     if (req.apiPass === true) {
