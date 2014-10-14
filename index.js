@@ -10,9 +10,12 @@ require('https').globalAgent.maxSockets = Infinity;
 
 exports = module.exports = function (endpoint, dopts) {
   dopts = dopts || {};
+  var onresponse = dopts.onresponse;
+  delete dopts.onresponse;
   var opts = extend({
     timeout: 30*1000,
     onresponse: function (response, res) {
+      if ('function' == typeof onresponse && onresponse(response, res)) return true;
       if (response.statusCode >= 400) {
         res.statusCode = response.statusCode;
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
